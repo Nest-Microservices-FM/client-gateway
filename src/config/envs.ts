@@ -5,7 +5,6 @@ import * as joi from 'joi';
 
 interface EnvVars{
   PORT: number;
-
   NATS_SERVERS: string[];
 }
 
