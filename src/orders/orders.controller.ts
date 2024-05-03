@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Inject, ParseUUIDPipe, Query, Patch, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Inject, ParseUUIDPipe, Query, Patch, UseGuards, Request, UseInterceptors } from '@nestjs/common';
 // import { ORDER_SERVICE } from 'src/config/services';
 import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { catchError } from 'rxjs';
@@ -6,8 +6,9 @@ import { CreateOrderDto, OrderPaginationDto, StatusDto } from './dto';
 import { PaginationDto } from 'src/common';
 import { NATS_SERVICE } from 'src/config/services';
 import { AuthGuard } from 'src/auth/guards';
+import { AddTokenInterceptor } from 'src/common/interceptors/add-token.interceptor';
 
-
+@UseInterceptors(AddTokenInterceptor)
 @Controller('orders')
 export class OrdersController {
 
@@ -15,10 +16,21 @@ export class OrdersController {
     @Inject(NATS_SERVICE) private readonly client: ClientProxy
   ) {}
 
+
+
+
   @UseGuards( AuthGuard )
   @Post()
-  create(@Body() createOrderDto: CreateOrderDto) {
-    return this.client.send('create_order', createOrderDto)
+  create(
+    @Body() createOrderDto: CreateOrderDto,
+    @Request() request  
+  ) {
+    const userId = request.user.id;
+    const data = {
+      userId: userId,
+      ...createOrderDto,
+    }
+    return this.client.send('create_order', data)
       .pipe(
         catchError( error => {throw new RpcException(error)})
       )

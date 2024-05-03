@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Inject, Param, ParseIntPipe, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Inject, Param, ParseIntPipe, Patch, Post, Query, UseGuards, UseInterceptors } from '@nestjs/common';
 import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { NATS_SERVICE } from 'src/config/services';
 import { PaginationDto } from '../common/dto/pagination.dto';
@@ -6,14 +6,19 @@ import { catchError } from 'rxjs';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { AuthGuard } from 'src/auth/guards';
+import { AddTokenInterceptor } from 'src/common/interceptors/add-token.interceptor';
+import { Roles } from 'src/auth/decorators';
 
 
+
+@UseInterceptors(AddTokenInterceptor)
 @Controller('products')
 export class ProductsController {
   
   constructor(@Inject(NATS_SERVICE) private readonly client: ClientProxy) {}
 
   @UseGuards( AuthGuard )
+  @Roles('ADMIN', 'OWNER')
   @Post()
   createProduct(@Body() createProductDto: CreateProductDto) {
     return this.client.send('create_product', createProductDto)

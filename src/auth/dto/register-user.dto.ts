@@ -1,4 +1,5 @@
-import { IsEmail, IsString, IsStrongPassword } from "class-validator";
+import { IsEmail, IsEnum, IsString, IsStrongPassword } from "class-validator";
+import { Role, RoleUserList } from "./enum/role.enum";
 
 export class RegisterUserDto {
   
@@ -13,5 +14,9 @@ export class RegisterUserDto {
   @IsStrongPassword()
   password: string;
 
+  @IsEnum(RoleUserList, {
+    message: `Valid role are ${ RoleUserList}`
+  })
+  role: Role;
 
 }
