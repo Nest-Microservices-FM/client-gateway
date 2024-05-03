@@ -46,6 +46,7 @@ export class ProductsController {
   }
 
   @UseGuards( AuthGuard )
+  @Roles('ADMIN', 'OWNER')
   @Delete(':id')
   deleteProduct(@Param('id', ParseIntPipe) id: number){
     return this.client.send('delete_product', {id})
@@ -55,6 +56,7 @@ export class ProductsController {
   }
 
   @UseGuards( AuthGuard )
+  @Roles('ADMIN', 'OWNER')
   @Patch(':id')
   patchProduct(
     @Param('id', ParseIntPipe) id: number, 

@@ -1,5 +1,4 @@
 import { Controller, Get, Post, Body, Param, Inject, ParseUUIDPipe, Query, Patch, UseGuards, Request, UseInterceptors } from '@nestjs/common';
-// import { ORDER_SERVICE } from 'src/config/services';
 import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { catchError } from 'rxjs';
 import { CreateOrderDto, OrderPaginationDto, StatusDto } from './dto';
@@ -7,6 +6,7 @@ import { PaginationDto } from 'src/common';
 import { NATS_SERVICE } from 'src/config/services';
 import { AuthGuard } from 'src/auth/guards';
 import { AddTokenInterceptor } from 'src/common/interceptors/add-token.interceptor';
+import { Roles } from 'src/auth/decorators';
 
 @UseInterceptors(AddTokenInterceptor)
 @Controller('orders')
@@ -15,7 +15,6 @@ export class OrdersController {
   constructor(
     @Inject(NATS_SERVICE) private readonly client: ClientProxy
   ) {}
-
 
 
 
@@ -37,6 +36,7 @@ export class OrdersController {
   }
 
   @UseGuards( AuthGuard )
+  @Roles('ADMIN', 'OWNER')
   @Get()
   findAll(@Query() orderPaginationDto:OrderPaginationDto) {
     return this.client.send('find_all_orders', orderPaginationDto)
